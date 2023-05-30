@@ -41,27 +41,3 @@ export const userListReducer = (state = { users: [] }, action) => {
   }
 };
 
-export const deleteUserReducer = (state = { users: [] }, action) => {
-  switch (action.type) {
-    case USER_LIST_REQUEST:
-      return { ...state, loading: true };
-    case USER_LIST_SUCCESS:
-      return { ...state, loading: false, users: action.payload };
-    case USER_LIST_FAIL:
-      return { ...state, loading: false, error: action.payload };
-    case USER_LIST_RESET:
-      return { users: [] };
-    case DELETE_USER_REQUEST:
-      return { ...state, loading: true };
-    case DELETE_USER_SUCCESS:
-      // Filter out the deleted user from the users array
-      const updatedUsers = state.users.filter(
-        (user) => user._id !== action.payload
-      );
-      return { ...state, loading: false, users: updatedUsers };
-    case DELETE_USER_FAILURE:
-      return { ...state, loading: false, error: action.payload };
-    default:
-      return state;
-  }
-};
