@@ -122,12 +122,16 @@ const UserComponent = () => {
                       <td>
                         <a>{user.email}</a>
                       </td>
-                      <td>{user.isAdmin ? "Admin" : "Customer"}</td>
+                      <td>
+                        {user.isAdmin ? <strong>Admin</strong> : "Customer"}
+                      </td>
                       <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                       <td>{new Date(user.updatedAt).toLocaleDateString()}</td>
-                      {user.phone && (
-                        <p>{phoneNumberFormatter(user.phone)}</p>
-                      )}
+                      <td>
+                        {user.phone && (
+                          <p>{phoneNumberFormatter(user.phone)}</p>
+                        )}
+                      </td>
                       <td className={statusColor}>{status}</td>
                       <td>
                         {!isHidden && (
