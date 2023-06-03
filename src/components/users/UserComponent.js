@@ -51,6 +51,18 @@ const UserComponent = () => {
     });
   }
 
+  const phoneNumberFormatter = (phoneNumber) => {
+    // Format the phone number based on your desired format
+    // For example, "+63 998 171 5899"
+    // You can customize this function according to your formatting requirements
+    const countryCode = phoneNumber.substring(0, 2);
+    const firstPart = phoneNumber.substring(2, 5);
+    const secondPart = phoneNumber.substring(5, 8);
+    const thirdPart = phoneNumber.substring(8);
+
+    return `+${countryCode} ${firstPart} ${secondPart} ${thirdPart}`;
+  };
+
   return (
     <section className="content-main">
       <div className="content-header">
@@ -113,7 +125,9 @@ const UserComponent = () => {
                       <td>{user.isAdmin ? "Admin" : "Customer"}</td>
                       <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                       <td>{new Date(user.updatedAt).toLocaleDateString()}</td>
-                      <td>{user.phone}</td>
+                      {user.phone && (
+                        <p>{phoneNumberFormatter(user.phone)}</p>
+                      )}
                       <td className={statusColor}>{status}</td>
                       <td>
                         {!isHidden && (
