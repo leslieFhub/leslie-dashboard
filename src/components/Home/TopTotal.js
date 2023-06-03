@@ -399,7 +399,7 @@ const TopTotal = (props) => {
         </div>
       </div>
 
-      <div className="col-lg-4">
+      <div className="col-lg-3">
         <div className="card card-body mb-4 shadow-sm">
           <article className="icontext">
             <div className="text">
@@ -419,7 +419,7 @@ const TopTotal = (props) => {
               </div>
               {startDate && endDate && (
                 <span>
-                  <b>Total Sales from</b> {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}:{" "}
+                  <b>Total Sales from:</b> {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}:{" "}
                   <b>Php {salesForDateRange.toFixed(2)}</b>
                 </span>
               )}
@@ -482,9 +482,9 @@ const TopTotal = (props) => {
         </div>
       </div>
 
-      <div className="col-lg-4">
+      <div className="col-lg-5">
         <div className="card card-body mb-4 shadow-sm">
-          <h5><b>Notes</b></h5>
+          <h5><b>Discount Notes</b></h5>
           <table className="table">
             <thead>
               <tr>
