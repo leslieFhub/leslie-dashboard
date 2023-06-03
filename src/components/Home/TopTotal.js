@@ -2,9 +2,6 @@ import React, { useState, useEffect} from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-
-
-
 const TopTotal = (props) => {
   const { orders, products } = props;
   let totalSale = 0;
@@ -336,7 +333,7 @@ const TopTotal = (props) => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Print</title>
+          <title>Discount Report</title>
           <style>
             /* Add your custom styles for the printed PDF here */
             /* For example: */
