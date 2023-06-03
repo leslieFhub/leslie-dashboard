@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const TopTotal = (props) => {
   const { orders, products } = props;
@@ -8,6 +10,32 @@ const TopTotal = (props) => {
       order.isPaid === true ? (totalSale = totalSale + order.totalPrice) : null
     );
   }
+
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  const handleDateChange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  const getSalesForDateRange = () => {
+    if (orders && startDate && endDate) {
+      const salesInRange = orders.reduce((totalSales, order) => {
+        const orderDate = new Date(order.createdAt).setHours(0, 0, 0, 0);
+        if (orderDate >= startDate && orderDate <= endDate && order.isPaid) {
+          return totalSales + order.totalPrice;
+        }
+        return totalSales;
+      }, 0);
+      return salesInRange;
+    }
+    return 0;
+  };
+
+  const salesForDateRange = getSalesForDateRange();
+
 
   const getTotalOrdersPerDay = () => {
     if (orders) {
@@ -46,34 +74,11 @@ const TopTotal = (props) => {
   const ordersPerDay = getTotalOrdersPerDay();
   const salesPerDay = getTotalSalesPerDay();
 
-  const [selectedOrdersDate, setSelectedOrdersDate] = useState("");
-  const [selectedSalesDate, setSelectedSalesDate] = useState("");
   const [dailyReportData, setDailyReportData] = useState([]);
   const [weeklyReportData, setWeeklyReportData] = useState([]);
   const [showDailyTable, setShowDailyTable] = useState(true);
   const [showWeeklyTable, setShowWeeklyTable] = useState(true);
 
-  const handleOrdersDateChange = (event) => {
-    setSelectedOrdersDate(event.target.value);
-  };
-
-  const handleSalesDateChange = (event) => {
-    setSelectedSalesDate(event.target.value);
-  };
-
-  const getOrdersForDate = () => {
-    if (selectedOrdersDate && ordersPerDay[selectedOrdersDate]) {
-      return ordersPerDay[selectedOrdersDate];
-    }
-    return 0;
-  };
-
-  const getSalesForDate = () => {
-    if (selectedSalesDate && salesPerDay[selectedSalesDate]) {
-      return salesPerDay[selectedSalesDate].toFixed(0);
-    }
-    return 0;
-  };
 
   const generateDailyReport = () => {
     const report = [];
@@ -195,7 +200,6 @@ const TopTotal = (props) => {
     }
   };
   
-
   const DailyReportComponent = () => {
     return (
       <div className={`report-table-container ${showDailyTable ? "w-100" : "d-none"}`} id="daily-report">
@@ -206,8 +210,8 @@ const TopTotal = (props) => {
           <thead>
             <tr>
               <th scope="col">Date</th>
-            <th scope="col">Order Count</th>
-            <th scope="col">Sales</th>
+              <th scope="col">Order Count</th>
+              <th scope="col">Sales</th>
             </tr>
           </thead>
           <tbody>
@@ -217,7 +221,7 @@ const TopTotal = (props) => {
                   <b>{data.date}</b>
                 </td>
                 <td>{data.orderCount}</td>
-                <td>Php {data.sales}</td>
+                <td>Php {data.sales.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -228,6 +232,7 @@ const TopTotal = (props) => {
       </div>
     );
   };
+  
 
   const WeeklyReportComponent = () => {
     return (
@@ -257,21 +262,19 @@ const TopTotal = (props) => {
                     <b>{data.week}</b>
                   </td>
                   <td>{data.orders}</td>
-                  <td>Php {data.sales}</td>
+                  <td>Php {Number(data.sales).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           <button className="btn btn-primary" onClick={() => printPDF("weekly-report")}>
-          Print PDF
-        </button>
+            Print PDF
+          </button>
         </div>
-        
       </div>
     );
   };
   
-
   return (
     <div className="row">
       <div className="col-lg-4">
@@ -313,6 +316,35 @@ const TopTotal = (props) => {
           </article>
         </div>
       </div>
+
+      <div className="col-lg-4">
+      <div className="card card-body mb-4 shadow-sm">
+        <article className="icontext">
+          <div className="text">
+            <h6 className="mb-1">
+              <b>Sales for Date Range</b>
+            </h6>
+            <div className="d-flex align-items-center">
+              <DatePicker
+                selected={startDate}
+                onChange={handleDateChange}
+                startDate={startDate}
+                endDate={endDate}
+                selectsRange
+                inline
+                className="custom-datepicker" // Add your custom CSS class here
+              />
+            </div>
+            {startDate && endDate && (
+              <span>
+                <b>Total Sales from</b> {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}:{" "}
+                <b>Php {salesForDateRange.toFixed(2)}</b>
+              </span>
+            )}
+          </div>
+        </article>
+      </div>
+    </div>
 
       <div className="row d-flex">
         {/* Generate Daily Report */}
