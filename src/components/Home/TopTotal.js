@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
+
+
 
 const TopTotal = (props) => {
   const { orders, products } = props;
@@ -13,6 +16,7 @@ const TopTotal = (props) => {
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [note, setNote] = useState("");
 
   const handleDateChange = (dates) => {
     const [start, end] = dates;
@@ -274,7 +278,88 @@ const TopTotal = (props) => {
       </div>
     );
   };
-  
+  const [orderId, setOrderId] = useState("");
+  const [discountType, setDiscountType] = useState("");
+  const [formDataList, setFormDataList] = useState([]);
+  useEffect(() => {
+    const storedFormData = localStorage.getItem('formDataList');
+    if (storedFormData) {
+      setFormDataList(JSON.parse(storedFormData));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('formDataList', JSON.stringify(formDataList));
+  }, [formDataList]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = { orderId, discountType, note };
+
+    setFormDataList([...formDataList, formData]);
+    setOrderId('');
+    setDiscountType('');
+    setNote('');
+  };
+  const generatePDF = () => {
+    const tableContent = formDataList
+      .map((formData, index) => {
+        return `
+          <tr key="${index}">
+            <td>${formData.orderId}</td>
+            <td>${formData.discountType}</td>
+            <td>${formData.note}</td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    const htmlContent = `
+      <h5><b>Notes</b></h5>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Discount Type</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableContent}
+        </tbody>
+      </table>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.open();
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+          <style>
+            /* Add your custom styles for the printed PDF here */
+            /* For example: */
+            .table {
+              border-collapse: collapse;
+              width: 100%;
+            }
+            .table th, .table td {
+              border: 1px solid black;
+              padding: 8px;
+              text-align: left;
+            }
+          </style>
+        </head>
+        <body>
+          ${htmlContent}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   return (
     <div className="row">
       <div className="col-lg-4">
@@ -318,33 +403,114 @@ const TopTotal = (props) => {
       </div>
 
       <div className="col-lg-4">
-      <div className="card card-body mb-4 shadow-sm">
-        <article className="icontext">
-          <div className="text">
-            <h6 className="mb-1">
-              <b>Sales for Date Range</b>
-            </h6>
-            <div className="d-flex align-items-center">
-              <DatePicker
-                selected={startDate}
-                onChange={handleDateChange}
-                startDate={startDate}
-                endDate={endDate}
-                selectsRange
-                inline
-                className="custom-datepicker" // Add your custom CSS class here
+        <div className="card card-body mb-4 shadow-sm">
+          <article className="icontext">
+            <div className="text">
+              <h6 className="mb-1">
+                <b>Sales for Date Range</b>
+              </h6>
+              <div className="d-flex align-items-center">
+                <DatePicker
+                  selected={startDate}
+                  onChange={handleDateChange}
+                  startDate={startDate}
+                  endDate={endDate}
+                  selectsRange
+                  inline
+                  className="custom-datepicker" // Add your custom CSS class here
+                />
+              </div>
+              {startDate && endDate && (
+                <span>
+                  <b>Total Sales from</b> {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}:{" "}
+                  <b>Php {salesForDateRange.toFixed(2)}</b>
+                </span>
+              )}
+              
+            </div>
+          </article>
+        </div>
+      </div>
+      
+      <div className="col-lg-4">
+        <div className="card card-body mb-4 shadow-sm">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group mb-3 newStyle">
+              <label htmlFor="orderId">
+                <b>Order ID:</b>
+              </label>
+              <input
+                type="text"
+                id="orderId"
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                className="form-control newStyle"
+                placeholder="Enter order ID"
+                required
               />
             </div>
-            {startDate && endDate && (
-              <span>
-                <b>Total Sales from</b> {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}:{" "}
-                <b>Php {salesForDateRange.toFixed(2)}</b>
-              </span>
-            )}
-          </div>
-        </article>
+            <div className="form-group mb-3 newStyle">
+              <label htmlFor="discountType">
+                <b>Discount Type:</b>
+              </label>
+              <select
+                id="discountType"
+                value={discountType}
+                onChange={(e) => setDiscountType(e.target.value)}
+                className="form-control newStyle"
+                required
+              >
+                <option value="">Select discount type</option>
+                <option value="PWD">PWD</option>
+                <option value="SENIOR">SENIOR</option>
+              </select>
+            </div>
+            <div className="form-group mb-3 newStyle">
+              <label htmlFor="note">
+                <b>Note:</b>
+              </label>
+              <textarea
+                id="note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="form-control newStyle"
+                placeholder="Enter a note"
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary newStyle">
+              Submit
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
+
+      <div className="col-lg-4">
+        <div className="card card-body mb-4 shadow-sm">
+          <h5><b>Notes</b></h5>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Discount Type</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formDataList.map((formData, index) => (
+                <tr key={index}>
+                  <td>{formData.orderId}</td>
+                  <td>{formData.discountType}</td>
+                  <td>{formData.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button onClick={generatePDF} className="btn btn-primary newStyle">
+            Generate PDF
+          </button>
+        </div>
+      </div>
 
       <div className="row d-flex">
         {/* Generate Daily Report */}
