@@ -91,6 +91,7 @@ const UserComponent = () => {
                   <th className="fs-5">Role</th>
                   <th className="fs-5">Created At</th>
                   <th className="fs-5">Updated At</th>
+                  <th className="fs-5">Phone Number</th>
                   <th className="fs-5">Status</th>
                   <th className="fs-5">Actions</th>
                 </tr>
@@ -112,6 +113,7 @@ const UserComponent = () => {
                       <td>{user.isAdmin ? "Admin" : "Customer"}</td>
                       <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                       <td>{new Date(user.updatedAt).toLocaleDateString()}</td>
+                      <td>{user.phone}</td>
                       <td className={statusColor}>{status}</td>
                       <td>
                         {!isHidden && (
