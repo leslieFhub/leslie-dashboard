@@ -3,6 +3,70 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const TopTotal = (props) => {
+  const [productName, setProductName] = useState("");
+  const [wasteType, setWasteType] = useState("");
+  const [text, setText] = useState("");
+  const [wasteFormDataList, setWasteFormDataList] = useState([]);
+
+  useEffect(() => {
+    const storedWasteFormData = localStorage.getItem("wasteFormDataList");
+    if (storedWasteFormData) {
+      setWasteFormDataList(JSON.parse(storedWasteFormData));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("wasteFormDataList", JSON.stringify(wasteFormDataList));
+  }, [wasteFormDataList]);
+
+  const handleSubmitWaste = (e) => {
+    e.preventDefault();
+
+    const formData = {
+      productName,
+      wasteType,
+      text,
+      timestamp: new Date().toLocaleString(),
+    };
+
+    setWasteFormDataList([...wasteFormDataList, formData]);
+    setProductName("");
+    setWasteType("");
+    setText("");
+  };
+
+  const [orderId, setOrderId] = useState("");
+  const [discountType, setDiscountType] = useState("");
+  const [note, setNote] = useState("");
+  const [discountFormDataList, setDiscountFormDataList] = useState([]);
+
+  useEffect(() => {
+    const storedDiscountFormData = localStorage.getItem("discountFormDataList");
+    if (storedDiscountFormData) {
+      setDiscountFormDataList(JSON.parse(storedDiscountFormData));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("discountFormDataList", JSON.stringify(discountFormDataList));
+  }, [discountFormDataList]);
+
+  const handleSubmitDiscount = (e) => {
+    e.preventDefault();
+
+    const formData = {
+      orderId,
+      discountType,
+      note,
+    };
+
+    setDiscountFormDataList([...discountFormDataList, formData]);
+    setOrderId("");
+    setDiscountType("");
+    setNote("");
+  };
+
+
   const { orders, products } = props;
   let totalSale = 0;
   if (orders) {
@@ -13,8 +77,6 @@ const TopTotal = (props) => {
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [note, setNote] = useState("");
-
   const handleDateChange = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
@@ -275,32 +337,8 @@ const TopTotal = (props) => {
       </div>
     );
   };
-  const [orderId, setOrderId] = useState("");
-  const [discountType, setDiscountType] = useState("");
-  const [formDataList, setFormDataList] = useState([]);
-  useEffect(() => {
-    const storedFormData = localStorage.getItem('formDataList');
-    if (storedFormData) {
-      setFormDataList(JSON.parse(storedFormData));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('formDataList', JSON.stringify(formDataList));
-  }, [formDataList]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const formData = { orderId, discountType, note };
-
-    setFormDataList([...formDataList, formData]);
-    setOrderId('');
-    setDiscountType('');
-    setNote('');
-  };
   const generatePDF = () => {
-    const tableContent = formDataList
+    const tableContent = discountFormDataList
       .map((formData, index) => {
         return `
           <tr key="${index}">
@@ -355,6 +393,75 @@ const TopTotal = (props) => {
     `);
     printWindow.document.close();
     printWindow.print();
+  };
+
+  const generateWastePDF = () => {
+    const tableData = wasteFormDataList.map((formData) => [
+      formData.productName,
+      formData.wasteType,
+      formData.text,
+      formData.timestamp,
+    ]);
+  
+    const tableRows = tableData.map((row, index) => (
+      `<tr key=${index}>
+        ${row.map((cell, cellIndex) => `<td key=${cellIndex}>${cell}</td>`).join("")}
+      </tr>`
+    ));
+  
+    const tableHtml = `
+      <h2>Waste Reports</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid #ddd; padding: 8px;">Product Name</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Waste Type</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Text</th>
+            <th style="border: 1px solid #ddd; padding: 8px;">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows.join("")}</tbody>
+      </table>
+    `;
+  
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Waste Reports</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+            }
+            table {
+              margin-top: 20px;
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+          </style>
+        </head>
+        <body>
+          ${tableHtml}
+        </body>
+      </html>
+    `;
+  
+    const pdfWindow = window.open("", "_blank");
+    pdfWindow.document.open();
+    pdfWindow.document.write(html);
+    pdfWindow.document.close();
+    pdfWindow.print();
+  };
+  const handleResetDiscount = () => {
+    setDiscountFormDataList([]);
+  };
+  const handleResetWaste = () => {
+    setWasteFormDataList([]);
   };
 
   return (
@@ -431,7 +538,7 @@ const TopTotal = (props) => {
       
       <div className="col-lg-4">
         <div className="card card-body mb-4 shadow-sm">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmitDiscount}>
             <div className="form-group mb-3 newStyle">
               <label htmlFor="orderId">
                 <b>Order ID:</b>
@@ -478,6 +585,7 @@ const TopTotal = (props) => {
             <button type="submit" className="btn btn-primary newStyle">
               Submit
             </button>
+            
           </form>
         </div>
       </div>
@@ -494,7 +602,7 @@ const TopTotal = (props) => {
               </tr>
             </thead>
             <tbody>
-              {formDataList.map((formData, index) => (
+              {discountFormDataList.map((formData, index) => (
                 <tr key={index}>
                   <td>{formData.orderId}</td>
                   <td>{formData.discountType}</td>
@@ -506,8 +614,101 @@ const TopTotal = (props) => {
           <button onClick={generatePDF} className="btn btn-primary newStyle">
             Generate PDF
           </button>
+          <button type="button" className="btn btn-secondary" onClick={handleResetDiscount}>
+            Reset
+          </button>
         </div>
       </div>
+
+
+    <div className="col-lg-6">
+      <div className="card card-body mb-4 shadow-sm">
+      <h2 className="mt-4"><b>Waste Reports</b></h2>
+      <form onSubmit={handleSubmitWaste}>
+        <div className="mb-3">
+          <label htmlFor="productName" className="form-label">
+            Product Name:
+          </label>
+          <select
+            id="productName"
+            className="form-select"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+          >
+            <option value="">Select a product</option>
+            {products.map((product) => (
+              <option key={product._id} value={product.name}>{product.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-3">
+          <label htmlFor="wasteType" className="form-label">
+            Waste Type:
+          </label>
+          <select
+            id="wasteType"
+            className="form-select"
+            value={wasteType}
+            onChange={(e) => setWasteType(e.target.value)}
+          >
+            <option value="">Select a waste type</option>
+            <option value="Overcooked">Overcooked</option>
+            <option value="Undercooked">Undercooked</option>
+            <option value="IncorrectToppings">Incorrect Toppings</option>
+            <option value="Contaminated">Contaminated</option>
+            <option value="MishandledOrder">Mishandled Order</option>
+            <option value="QualityControlIssue">Quality Control Issue</option>
+          </select>
+
+        </div>
+        <div className="mb-3">
+          <label htmlFor="text" className="form-label">
+            Other waste type:
+          </label>
+          <textarea
+            id="text"
+            className="form-control"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          ></textarea>
+        </div>
+        <button type="submit" className="btn btn-primary">Submit</button>
+      </form>
+    </div>
+    </div>
+
+    <div className="col-lg-6">
+      <div className="card card-body mb-4 shadow-sm">
+      <h2 className="mt-4"><b>Waste Reports Table</b></h2>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Waste Type</th>
+            <th>Text</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+        {wasteFormDataList.map((formData, index) => (
+            <tr key={index}>
+              <td>{formData.productName}</td>
+              <td>{formData.wasteType}</td>
+              <td>{formData.text}</td>
+              <td>{formData.timestamp}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
+      <button onClick={generateWastePDF} className="btn btn-primary newStyle">
+            Generate PDF
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={handleResetWaste}>
+            Reset
+          </button>
+      </div>
+    </div>
 
       <div className="row d-flex">
         {/* Generate Daily Report */}
