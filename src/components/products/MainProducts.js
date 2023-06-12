@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Product from "./Product";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,25 +15,67 @@ const MainProducts = () => {
   const productDelete = useSelector((state) => state.productDelete);
   const { error: errorDelete, success: successDelete } = productDelete;
 
+  const [stockHistory, setStockHistory] = useState([]);
+
   useEffect(() => {
     dispatch(listProducts());
   }, [dispatch, successDelete]);
+
+  useEffect(() => {
+    const storedStockHistory = JSON.parse(localStorage.getItem("stockHistory"));
+    if (storedStockHistory) {
+      setStockHistory(storedStockHistory);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("stockHistory", JSON.stringify(stockHistory));
+  }, [stockHistory]);
+  
+  const handleStockChange = (historyEntry) => {
+    setStockHistory((prevStockHistory) => {
+      const updatedStockHistory = [...prevStockHistory];
+      const lastEntry = updatedStockHistory[updatedStockHistory.length - 1];
+  
+      if (
+        !lastEntry ||
+        lastEntry.productName !== historyEntry.productName ||
+        lastEntry.timestamp !== historyEntry.timestamp ||
+        lastEntry.stockChange !== historyEntry.stockChange ||
+        lastEntry.updatedStock !== historyEntry.updatedStock
+      ) {
+        return [...updatedStockHistory, historyEntry];
+      }
+  
+      return updatedStockHistory;
+    });
+  };
+  
+
+
+const handleResetTable = () => {
+  const confirmed = window.confirm("Are you sure? This cannot be undone.");
+  if (confirmed) {
+    setStockHistory([]);
+    localStorage.removeItem("stockHistory");
+  }
+};
+
 
   return (
     <section className="content-main">
       <div className="content-header">
         <h2 className="content-title">Products</h2>
-        
       </div>
 
       <div className="card mb-4 shadow-sm">
-        <header className="card-header bg-white ">
+        <header className="card-header bg-white">
           <div className="row gx-3 py-3">
-          <div>
-            <Link to="/addproduct" className="btn btn-primary">
-              Create new
-            </Link>
-        </div>
+            <div>
+              <Link to="/addproduct" className="btn btn-primary">
+                Create new
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -49,42 +91,90 @@ const MainProducts = () => {
             <div className="row">
               {/* Products */}
               {products.map((product) => (
-                <Product product={product} key={product._id} />
+                <Product
+                  product={product}
+                  key={product._id}
+                  onStockChange={handleStockChange}
+                />
               ))}
             </div>
           )}
-
-          <nav className="float-end mt-4" aria-label="Page navigation">
-            <ul className="pagination">
-              <li className="page-item disabled">
-                <Link className="page-link" to="#">
-                  Previous
-                </Link>
-              </li>
-              <li className="page-item active">
-                <Link className="page-link" to="#">
-                  1
-                </Link>
-              </li>
-              <li className="page-item">
-                <Link className="page-link" to="#">
-                  2
-                </Link>
-              </li>
-              <li className="page-item">
-                <Link className="page-link" to="#">
-                  3
-                </Link>
-              </li>
-              <li className="page-item">
-                <Link className="page-link" to="#">
-                  Next
-                </Link>
-              </li>
-            </ul>
-          </nav>
         </div>
       </div>
+
+      <div className="card mb-4 shadow-sm">
+        <header className="card-header bg-white">
+          <div className="row gx-3 py-3">
+            <div className="col-12">
+              <h3 className="mb-0"><b>Stock History</b></h3>
+            </div>
+          </div>
+        </header>
+
+        <div className="card-body">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Timestamp</th>
+                <th>Deducted Stock</th>
+                <th>Updated Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stockHistory.map((entry, index) => (
+                <tr key={index}>
+                  <td><b>{entry.productName}</b></td>
+                  <td>{entry.timestamp}</td>
+                  <td>{entry.stockChange}</td>
+                  <td>{entry.updatedStock}</td>
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+          {stockHistory.length > 0 && (
+            <div className="text-end">
+              <button
+                className="btn btn-outline-primary"
+                onClick={handleResetTable}
+              >
+                Reset Table
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <nav className="float-end mt-4" aria-label="Page navigation">
+        <ul className="pagination">
+          <li className="page-item disabled">
+            <Link className="page-link" to="#">
+              Previous
+            </Link>
+          </li>
+          <li className="page-item active">
+            <Link className="page-link" to="#">
+              1
+            </Link>
+          </li>
+          <li className="page-item">
+            <Link className="page-link" to="#">
+              2
+            </Link>
+          </li>
+          <li className="page-item">
+            <Link className="page-link" to="#">
+              3
+            </Link>
+          </li>
+          <li className="page-item">
+            <Link className="page-link" to="#">
+              Next
+            </Link>
+          </li>
+        </ul>
+      </nav>
     </section>
   );
 };
