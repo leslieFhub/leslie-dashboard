@@ -10,13 +10,12 @@ const Product = (props) => {
   const [stockChange, setStockChange] = useState(0);
 
   const decreaseCount = () => {
-    if (product.countInStock > 0) {
-      setStockChange(stockChange - 1);
+    if (product.countInStock + stockChange > 0) {
+      const updatedStockChange = stockChange - 1;
+      setStockChange(updatedStockChange);
+    } else {
+      alert("You cannot deduct more products.");
     }
-  };
-
-  const increaseCount = () => {
-    setStockChange(stockChange + 1);
   };
 
   const handleUpdate = () => {
@@ -24,33 +23,30 @@ const Product = (props) => {
     const timestamp = new Date().toLocaleString();
     const historyEntry = {
       timestamp,
-      previousStock: product.countInStock - stockChange,
+      originalStock: product.countInStock,
       stockChange: stockChange,
       updatedStock,
       productName: product.name,
     };
-  
+
     onStockChange(historyEntry);
-  
+
     dispatch(
       updateProduct({
         ...product,
         countInStock: updatedStock,
       })
     );
-  
+
     let actionText =
       stockChange > 0
         ? `add ${stockChange} stock(s)`
         : `remove ${Math.abs(stockChange)} stock(s)`;
     alert(`Original Stock: ${product.countInStock}\nYou will ${actionText}`);
     alert("Stocks updated successfully");
-  
+
     setStockChange(0);
-  
-    window.location.reload(); // Refresh the page
   };
-  
 
   useEffect(() => {
     setStockChange(0); // Reset stockChange to 0 when the product prop changes
@@ -73,7 +69,9 @@ const Product = (props) => {
             <button className="btn btn-edit_orig" onClick={decreaseCount}>
               -
             </button>
-            <span className="count-in-stock">{product.countInStock + stockChange}</span>
+            <span className="count-in-stock">
+              {product.countInStock + stockChange}
+            </span>
             <button className="btn btn-success" onClick={handleUpdate}>
               Update
             </button>
