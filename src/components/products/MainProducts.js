@@ -31,12 +31,12 @@ const MainProducts = () => {
   useEffect(() => {
     localStorage.setItem("stockHistory", JSON.stringify(stockHistory));
   }, [stockHistory]);
-  
+
   const handleStockChange = (historyEntry) => {
     setStockHistory((prevStockHistory) => {
       const updatedStockHistory = [...prevStockHistory];
       const lastEntry = updatedStockHistory[updatedStockHistory.length - 1];
-  
+
       if (
         !lastEntry ||
         lastEntry.productName !== historyEntry.productName ||
@@ -46,21 +46,18 @@ const MainProducts = () => {
       ) {
         return [...updatedStockHistory, historyEntry];
       }
-  
+
       return updatedStockHistory;
     });
   };
-  
 
-
-const handleResetTable = () => {
-  const confirmed = window.confirm("Are you sure? This cannot be undone.");
-  if (confirmed) {
-    setStockHistory([]);
-    localStorage.removeItem("stockHistory");
-  }
-};
-
+  const handleResetTable = () => {
+    const confirmed = window.confirm("Are you sure? This cannot be undone.");
+    if (confirmed) {
+      setStockHistory([]);
+      localStorage.removeItem("stockHistory");
+    }
+  };
 
   return (
     <section className="content-main">
@@ -80,9 +77,7 @@ const handleResetTable = () => {
         </header>
 
         <div className="card-body">
-          {errorDelete && (
-            <Message variant="alert-danger">{errorDelete}</Message>
-          )}
+          {errorDelete && <Message variant="alert-danger">{errorDelete}</Message>}
           {loading ? (
             <Loading />
           ) : error ? (
@@ -117,7 +112,7 @@ const handleResetTable = () => {
               <tr>
                 <th>Name</th>
                 <th>Timestamp</th>
-                <th>Deducted Stock</th>
+                <th>Original Stock</th>
                 <th>Updated Stock</th>
               </tr>
             </thead>
@@ -126,55 +121,21 @@ const handleResetTable = () => {
                 <tr key={index}>
                   <td><b>{entry.productName}</b></td>
                   <td>{entry.timestamp}</td>
-                  <td>{entry.stockChange}</td>
+                  <td>{entry.originalStock}</td>
                   <td>{entry.updatedStock}</td>
                 </tr>
               ))}
             </tbody>
-
           </table>
           {stockHistory.length > 0 && (
-            <div className="text-end">
-              <button
-                className="btn btn-outline-primary"
-                onClick={handleResetTable}
-              >
+            <div className="text-center">
+              <button className="btn btn-danger" onClick={handleResetTable}>
                 Reset Table
               </button>
             </div>
           )}
         </div>
       </div>
-
-      <nav className="float-end mt-4" aria-label="Page navigation">
-        <ul className="pagination">
-          <li className="page-item disabled">
-            <Link className="page-link" to="#">
-              Previous
-            </Link>
-          </li>
-          <li className="page-item active">
-            <Link className="page-link" to="#">
-              1
-            </Link>
-          </li>
-          <li className="page-item">
-            <Link className="page-link" to="#">
-              2
-            </Link>
-          </li>
-          <li className="page-item">
-            <Link className="page-link" to="#">
-              3
-            </Link>
-          </li>
-          <li className="page-item">
-            <Link className="page-link" to="#">
-              Next
-            </Link>
-          </li>
-        </ul>
-      </nav>
     </section>
   );
 };
